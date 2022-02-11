@@ -1,16 +1,14 @@
 from django.db.models import Sum
 from django.http import HttpResponse
-
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
-
-from api.mixins import CreateListViewSet
-from api.models import (Ingredient, Recipe, Tag)
-from api.permissions import IsAuthorOrReadOnly
-from api.serializers import (IngredientSerializer, FavoriteSerializer,
-                             RecipeSerializer, TagSerializer)
+from .mixins import CreateListViewSet
+from .models import (Ingredient, Recipe, Tag)
+from .permissions import IsAuthorOrReadOnly
+from .serializers import (IngredientSerializer, FavoriteSerializer,
+                          RecipeSerializer, TagSerializer)
 
 ALREADY_ADD_RECIPE = 'Этот рецепт уже добавлен'
 ERROR_ADD_RECIPE = 'Этот рецепт не был добавлен'

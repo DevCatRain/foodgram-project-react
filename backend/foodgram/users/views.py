@@ -5,10 +5,8 @@ from rest_framework import permissions, status
 from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
-
 from users.models import Follow
 from users.serializers import FollowSerializer, UserSerializer
-
 
 User = get_user_model()
 

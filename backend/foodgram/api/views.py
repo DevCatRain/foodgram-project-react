@@ -1,21 +1,16 @@
-from functools import reduce
-from turtle import Shape
-
-from django.db.models import F, Sum
+from django.db.models import Sum
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
+
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 
 from api.mixins import CreateListViewSet
-from api.models import (AmountOfIngredient, Ingredient, Favorite,
-                        Recipe, ShoppingCart, Tag)
+from api.models import (Ingredient, Recipe, Tag)
 from api.permissions import IsAuthorOrReadOnly
 from api.serializers import (IngredientSerializer, FavoriteSerializer,
-                             RecipeSerializer, ShoppingCartSerializer,
-                             TagSerializer)
+                             RecipeSerializer, TagSerializer)
 
 ALREADY_ADD_RECIPE = 'Этот рецепт уже добавлен'
 ERROR_ADD_RECIPE = 'Этот рецепт не был добавлен'
@@ -74,7 +69,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             shopping_cart_recipe__user=user
         ).values('ingredients__name',
                  'ingredients__measurement_unit').annotate(
-                    amount=Sum('amountofingredient__amount'))
+                     amount=Sum('amountofingredient__amount'))
 
         text += '\n'.join([
             f'{ingredient["ingredients__name"]} '

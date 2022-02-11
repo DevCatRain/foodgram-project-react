@@ -1,14 +1,11 @@
 from django.contrib import admin
+
 from api.models import (AmountOfIngredient, Ingredient, Favorite,
                         Recipe, ShoppingCart, Tag)
 
 
 class AmountOfIngredientInlineAdmin(admin.TabularInline):
     model = AmountOfIngredient
-
-
-""" class IngredientInlineAdmin(admin.TabularInline):
-    model = Ingredient """
 
 
 @admin.register(Recipe)

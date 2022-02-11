@@ -1,9 +1,10 @@
-from django.contrib.auth import get_user_model
-from django.db.models import F
+from functools import reduce
+from turtle import Shape
+
+from django.db.models import F, Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
-from functools import reduce
-from rest_framework import viewsets, permissions, status
+from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
@@ -11,11 +12,13 @@ from rest_framework.response import Response
 from api.mixins import CreateListViewSet
 from api.models import (AmountOfIngredient, Ingredient, Favorite,
                         Recipe, ShoppingCart, Tag)
+from api.permissions import IsAuthorOrReadOnly
 from api.serializers import (IngredientSerializer, FavoriteSerializer,
                              RecipeSerializer, ShoppingCartSerializer,
                              TagSerializer)
 
-User = get_user_model()
+ALREADY_ADD_RECIPE = 'Этот рецепт уже добавлен'
+ERROR_ADD_RECIPE = 'Этот рецепт не был добавлен'
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -29,85 +32,55 @@ class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     pagination_class = LimitOffsetPagination
+    permission_classes = (IsAuthorOrReadOnly,)
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
+
+    def _add_recipe_in(self, request, related_manager):
+        recipe = self.get_object()
+        if request.method == 'POST':
+            if related_manager.filter(recipe=recipe).exists():
+                return Response(ALREADY_ADD_RECIPE,
+                                status=status.HTTP_400_BAD_REQUEST)
+            new_one = related_manager.create(user=request.user, recipe=recipe)
+            serializer = FavoriteSerializer(new_one)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        if related_manager.filter(recipe=recipe).exists():
+            related_manager.get(recipe_id=recipe.id).delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(ERROR_ADD_RECIPE, status=status.HTTP_400_BAD_REQUEST)
 
     @action(permission_classes=[permissions.IsAuthenticated],
             methods=['POST', 'DELETE'],
             detail=True)
     def favorite(self, request, pk):
-        user = request.user
-        recipe = get_object_or_404(Recipe, id=pk)
-        favorite = user.favorite_user.filter(recipe=recipe)
-
-        if request.method == 'POST':
-            if favorite.exists():
-                return Response('Этот рецепт уже добавлен в избранное',
-                                status=status.HTTP_400_BAD_REQUEST)
-            new_fav = Favorite.objects.create(
-                user=user, recipe=recipe
-            )
-            serializer = FavoriteSerializer(new_fav)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        if favorite.exists():
-            favorite.delete()
-            return Response('Вы убрали этот рецепт из избранного',
-                            status=status.HTTP_204_NO_CONTENT)
-        return Response('Этот рецепт не был добавлен в избранное',
-                        status=status.HTTP_400_BAD_REQUEST)
+        return self._add_recipe_in(request, request.user.favorite_user)
 
     @action(permission_classes=[permissions.IsAuthenticated],
             methods=['POST', 'DELETE'],
             detail=True)
     def shopping_cart(self, request, pk):
-        user = request.user
-        recipe = get_object_or_404(Recipe, id=pk)
-        cart = user.shopping_cart_user.filter(recipe=recipe)
-
-        if request.method == 'POST':
-            if cart.exists():
-                return Response('Этот рецепт уже добавлен в корзину',
-                                status=status.HTTP_400_BAD_REQUEST)
-            new_recipe = ShoppingCart.objects.create(
-                user=user, recipe=recipe
-            )
-            serializer = ShoppingCartSerializer(new_recipe)
-            return Response(serializer.data,
-                            status=status.HTTP_201_CREATED)
-
-        if cart.exists():
-            cart.delete()
-            return Response('Рецепт успешно удален из корзины',
-                            status=status.HTTP_204_NO_CONTENT)
-        return Response('Этого рецепта нет в вашей корзине',
-                        status=status.HTTP_400_BAD_REQUEST)
+        return self._add_recipe_in(request, request.user.shopping_cart_user)
 
     @action(permission_classes=[permissions.IsAuthenticated],
             methods=['GET'],
             detail=False)
     def download_shopping_cart(self, request):
         text = 'Ваш список покупок:\n\n'
-        user = request.user
-        ingredients = AmountOfIngredient.objects.filter(
-            recipe__shopping_cart_recipe__user=user
-        ).annotate(ing_name=F('ingredient__name'),
-                   ing_m_u=F('ingredient__measurement_unit'),
-                   ing_amount=F('amount'))
+        user = self.request.user
+        ingredients = Recipe.objects.filter(
+            shopping_cart_recipe__user=user
+        ).values('ingredients__name',
+                 'ingredients__measurement_unit').annotate(
+                    amount=Sum('amountofingredient__amount'))
 
-        ingredients_list = {}
-        for ingredient in ingredients:
-            key = f'{ingredient.ing_name}, {ingredient.ing_m_u}'
-            if key in ingredients_list:
-                ingredients_list[key] += ingredient.ing_amount
-            else:
-                ingredients_list[key] = ingredient.ing_amount
-
-        text += reduce(
-            lambda x, key:
-            x + '   ' + key + ' -- ' + str(ingredients_list[key]) + '\n',
-            ingredients_list, '')
+        text += '\n'.join([
+            f'{ingredient["ingredients__name"]} '
+            f'({ingredient["ingredients__measurement_unit"]}) — '
+            f'{ingredient["amount"]}\n' for ingredient in ingredients
+        ])
 
         response = HttpResponse(text, content_type='text/plain; charset=utf-8')
         filename = 'shopping_list.txt'

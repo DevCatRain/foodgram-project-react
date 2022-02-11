@@ -7,7 +7,7 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 
 from users.models import Follow
-from users.serializers import (FollowSerializer, UserSerializer)
+from users.serializers import FollowSerializer, UserSerializer
 
 
 User = get_user_model()
@@ -32,7 +32,7 @@ class UsersViewSet(UserViewSet):
             detail=False)
     def me(self, request):
         serializer = self.get_serializer(request.user)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(permission_classes=[permissions.IsAuthenticated],
             methods=['GET'],

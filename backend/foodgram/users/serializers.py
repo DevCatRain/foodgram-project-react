@@ -1,8 +1,15 @@
-from django.contrib.auth import get_user_model
 from djoser.serializers import UserCreateSerializer
 from rest_framework import serializers, validators
+
+from django.contrib.auth import get_user_model
+
 from api.models import Recipe
-from users.models import Follow
+from .models import Follow
+
+EMAIL_USED = 'Этот email уже зарегистрирован'
+USERNAME_USED = 'Это имя пользователя уже используется'
+ALREADY_SUB = 'Вы уже подписаны на автора'
+SUB_TO_YOUSELF = 'Нельзя подписаться на себя'
 
 User = get_user_model()
 
@@ -12,15 +19,17 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'first_name',
-                  'last_name', 'email', 'is_subscribed')
+        fields = ('email', 'id', 'username', 'first_name',
+                  'last_name', 'is_subscribed')
 
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
-        if not request or request.user.is_anonymous:
+        follower = request.user
+        if follower.is_anonymous:
             return False
         return Follow.objects.filter(
-            user=request.user, author=obj.author
+            user=follower,
+            author=obj
         ).exists()
 
 
@@ -28,12 +37,12 @@ class UserCreateSerializer(UserCreateSerializer):
     email = serializers.EmailField(
         validators=[validators.UniqueValidator(
             queryset=User.objects.all(),
-            message='Этот email уже зарегистрирован')]
+            message=EMAIL_USED)]
     )
     username = serializers.CharField(
         validators=[validators.UniqueValidator(
             queryset=User.objects.all(),
-            message='Это имя пользователя уже используется')]
+            message=USERNAME_USED)]
     )
 
     class Meta:
@@ -61,7 +70,7 @@ class FollowSerializer(serializers.ModelSerializer):
             validators.UniqueTogetherValidator(
                 queryset=Follow.objects.all(),
                 fields=('user', 'author'),
-                message='Вы уже подписаны на автора'
+                message=ALREADY_SUB
             )
         ]
 
@@ -92,9 +101,7 @@ class FollowSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         if data['user'] == data['author']:
-            raise serializers.ValidationError(
-                'Нельзя подписаться на себя'
-            )
+            raise serializers.ValidationError(SUB_TO_YOUSELF)
         return data
 
 

@@ -1,17 +1,24 @@
-from django.db.models import Sum
-from django.http import HttpResponse
+from functools import reduce
+
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
+
+from django.db.models import Sum
+from django.http import HttpResponse
+
+from .filters import IngredientFilter, RecipeFilter
 from .mixins import CreateListViewSet
-from .models import (Ingredient, Recipe, Tag)
-from .permissions import IsAuthorOrReadOnly
-from .serializers import (IngredientSerializer, FavoriteSerializer,
-                          RecipeSerializer, TagSerializer)
+from .models import Ingredient, Recipe, Tag
+from .paginator import CustomPaginator
+from .permissions import AuthorOrReadOnly
+from .serializers import (
+    FavoriteSerializer, IngredientSerializer, RecipeSerializer, TagSerializer,
+)
 
 ALREADY_ADD_RECIPE = 'Этот рецепт уже добавлен'
 ERROR_ADD_RECIPE = 'Этот рецепт не был добавлен'
+TITLE = 'Ваш список покупок:\n\n'
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -20,15 +27,17 @@ class RecipeViewSet(viewsets.ModelViewSet):
     Сортировка от новых к старым.
     Страница доступна всем пользователям.
     Доступна фильтрация по избранному, автору, списку покупок и тегам.
+    Методы GET, POST, PATCH, DELETE.
     """
 
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
-    pagination_class = LimitOffsetPagination
-    permission_classes = (IsAuthorOrReadOnly,)
+    pagination_class = CustomPaginator
+    permission_classes = (AuthorOrReadOnly,)
+    filter_class = RecipeFilter
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+        return serializer.save(author=self.request.user)
 
     def _add_recipe_in(self, request, related_manager):
         recipe = self.get_object()
@@ -61,19 +70,27 @@ class RecipeViewSet(viewsets.ModelViewSet):
             methods=['GET'],
             detail=False)
     def download_shopping_cart(self, request):
-        text = 'Ваш список покупок:\n\n'
-        user = self.request.user
+        text = TITLE
+        user = request.user
         ingredients = Recipe.objects.filter(
             shopping_cart_recipe__user=user
         ).values('ingredients__name',
                  'ingredients__measurement_unit').annotate(
-                     amount=Sum('amountofingredient__amount'))
+                     amount=Sum('amount_recipe__amount'))
 
-        text += '\n'.join([
-            f'{ingredient["ingredients__name"]} '
-            f'({ingredient["ingredients__measurement_unit"]}) — '
-            f'{ingredient["amount"]}\n' for ingredient in ingredients
-        ])
+        ingredients_list = {}
+        for ingredient in ingredients:
+            key = (f'{ingredient["ingredients__name"]}, '
+                   f'{ingredient["ingredients__measurement_unit"]}')
+            if key in ingredients_list:
+                ingredients_list[key] += ingredient['amount']
+            else:
+                ingredients_list[key] = ingredient['amount']
+
+        text += reduce(
+            lambda x, key:
+            x + '   ' + key + ' -- ' + str(ingredients_list[key]) + '\n',
+            ingredients_list, '')
 
         response = HttpResponse(text, content_type='text/plain; charset=utf-8')
         filename = 'shopping_list.txt'
@@ -85,28 +102,36 @@ class IngredientViewSet(viewsets.ModelViewSet):
 
     """ Список ингредиентов с возможностью поиска по имени.
     Страница доступна всем пользователям.
+    Метод GET.
     """
 
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
+    filter_class = IngredientFilter
+    search_field = ('^name',)
+    pagination_class = None
 
 
 class TagViewSet(viewsets.ModelViewSet):
 
     """ Позволяет устанавливать теги на рецептах.
+    Страница доступна всем пользователям.
+    Метод GET.
     """
 
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
+    pagination_class = None
 
 
 class FavoriteViewSet(CreateListViewSet):
 
-    """ Позволяет добавлять понравившиеся рецепты в избранное.
+    """ Позволяет добавлять/удалять понравившиеся рецепты в избранное.
+    Доступно только авторизованному пользователю.
+    Методы POST, DELETE.
     """
 
     serializer_class = FavoriteSerializer
-    pagination_class = LimitOffsetPagination
 
     def get_queryset(self):
         return self.request.user.favorite_recipe.all()

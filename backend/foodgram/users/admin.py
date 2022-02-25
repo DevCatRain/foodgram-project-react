@@ -1,5 +1,8 @@
+from rest_framework.authtoken.models import Token
+
 from django.contrib import admin
-from users.models import Follow, User
+
+from .models import Follow, User
 
 
 @admin.register(User)

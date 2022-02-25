@@ -1,9 +1,19 @@
 from colorfield.fields import ColorField
+from rest_framework import serializers
+
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
 from django.db import models
 
+MIN_COOK_TIME = 'Время приготовления блюда должно быть не менее одной минуты'
+MIN_AMOUNT = 'Количество ингредиента должно быть больше нуля'
+
 User = get_user_model()
+
+
+def min_cooking_time(value):
+    if value < 1:
+        raise serializers.ValidationError({'cooking_time': MIN_COOK_TIME})
 
 
 class Ingredient(models.Model):
@@ -81,7 +91,7 @@ class Recipe(models.Model):
         Ingredient,
         related_name='recipe_ingredients',
         through='AmountOfIngredient',
-        verbose_name='Интгредиенты'
+        verbose_name='Ингредиенты'
     )
     tags = models.ManyToManyField(
         Tag,
@@ -90,11 +100,7 @@ class Recipe(models.Model):
     )
     cooking_time = models.PositiveSmallIntegerField(
         verbose_name='Время приготовления',
-        validators=[MinValueValidator(1)],
-        error_messages={
-            'validators': 'Время приготовления блюда '
-            'должно быть не менее одной минуты'
-        }
+        validators=[MinValueValidator(1), min_cooking_time],
     )
     pub_date = models.DateTimeField(
         auto_now_add=True,
@@ -114,19 +120,19 @@ class AmountOfIngredient(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        verbose_name='Рецепт'
+        verbose_name='Рецепт',
+        related_name='amount_recipe'
     )
     ingredient = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
-        verbose_name='Ингредиенты'
+        verbose_name='Ингредиенты',
+        related_name='amount_ingredient'
     )
     amount = models.PositiveSmallIntegerField(
         verbose_name='Количество',
         validators=[MinValueValidator(0)],
-        error_messages={
-            'validators': 'Количество ингредиента должно быть больше нуля'
-        },
+        error_messages={'validators': MIN_AMOUNT},
     )
 
     class Meta:

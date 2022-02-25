@@ -31,21 +31,31 @@ class User(AbstractUser):
         unique=True,
     )
 
-    bio = None
-    role = None
-
     def __str__(self) -> str:
         return self.username
+
+    REQUIRED_FIELDS = ['email', 'first_name', 'last_name']
+
+    class Meta:
+        ordering = ['username']
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
 
 
 class Follow(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE,
-                             related_name='user')
+                             related_name='follower',
+                             verbose_name='подписчик')
     author = models.ForeignKey(User, on_delete=models.CASCADE,
-                               related_name='author')
+                               related_name='author',
+                               verbose_name='автор')
+
+    def __str__(self) -> str:
+        return f'{self.user} подписан на {self.author}'
 
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=['user', 'author'],
                                     name='uniq_following')
         ]
+        ordering = ['-id']

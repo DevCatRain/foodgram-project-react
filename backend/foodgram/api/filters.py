@@ -8,7 +8,8 @@ User = get_user_model()
 
 
 class IngredientFilter(rest_framework.FilterSet):
-    name = rest_framework.CharFilter(field_name='name', lookup_expr='contains')
+    name = rest_framework.CharFilter(field_name='name',
+                                     lookup_expr='startswith')
 
     class Meta:
         model = Ingredient
@@ -19,7 +20,7 @@ class RecipeFilter(rest_framework.FilterSet):
     """ Фильтрация рецептов по избранному, автору, списку покупок и тегам.
     """
     tags = rest_framework.ModelMultipleChoiceFilter(
-        field_name='recipe_tag__slug',
+        field_name='tags__slug',
         queryset=Tag.objects.all(),
         to_field_name='slug',
     )

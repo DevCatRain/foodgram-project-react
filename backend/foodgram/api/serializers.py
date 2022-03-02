@@ -87,12 +87,26 @@ class RecipeSerializer(serializers.ModelSerializer):
             user=request.user, recipe=obj
         ).exists()
 
-    def validate(self, data):
-        ingredients = self.initial_data.get('ingredients')
-        if not ingredients:
+    def validate_tags(self, data):
+        if not data:
+            raise serializers.ValidationError({'tags': MIN_TAG})
+
+        if len(data) != len(set(data)):
+            raise serializers.ValidationError({'tags': DOUBLE_TAG})
+
+        for tag_id in data:
+            if not Tag.objects.filter(id=tag_id).exists():
+                raise serializers.ValidationError(
+                    f'{tag_id}: {NO_TAG}'
+                )
+        data['tags'] = data
+        return data
+
+    def validate_ingredients(self, data):
+        if not data:
             raise serializers.ValidationError({'ingredients': MIN_INGREDIENT})
 
-        ids = [ing['id'] for ing in ingredients]
+        ids = [ing['id'] for ing in data]
         if len(ids) != len(set(ids)):
             raise serializers.ValidationError(
                 {'ingredients': DOUBLE_INGREDIENT}
@@ -102,27 +116,20 @@ class RecipeSerializer(serializers.ModelSerializer):
             if not Ingredient.objects.filter(id=id).exists():
                 raise serializers.ValidationError(f'{id}: {NO_INGREDIENT}')
 
-        amounts = [ing['amount'] for ing in ingredients]
+        amounts = [ing['amount'] for ing in data]
         for amount in amounts:
             if int(amount) <= 0:
                 raise serializers.ValidationError({'amount': MIN_AMOUNT})
 
-        data['ingredients'] = ingredients
+        return data
 
-        tags = self.initial_data.get('tags')
-
-        if not tags:
-            raise serializers.ValidationError({'tags': MIN_TAG})
-
-        if len(tags) != len(set(tags)):
-            raise serializers.ValidationError({'tags': DOUBLE_TAG})
-
-        for tag_id in tags:
-            if not Tag.objects.filter(id=tag_id).exists():
-                raise serializers.ValidationError(
-                    f'{tag_id}: {NO_TAG}'
-                )
-        data['tags'] = tags
+    def validate(self, data):
+        data['ingredients'] = self.validate_ingredients(
+            self.initial_data.get('ingredients')
+        )
+        data['tags'] = self.validate_tags(
+            self.initial_data.get('tags')
+        )
 
         author = self.context.get('request').user
         if self.context.get('request').method == 'POST':

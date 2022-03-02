@@ -1,5 +1,6 @@
 from functools import reduce
 
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -35,6 +36,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     pagination_class = CustomPaginator
     permission_classes = (AuthorOrReadOnly,)
     filter_class = RecipeFilter
+    filter_backends = (DjangoFilterBackend,)
 
     def perform_create(self, serializer):
         return serializer.save(author=self.request.user)

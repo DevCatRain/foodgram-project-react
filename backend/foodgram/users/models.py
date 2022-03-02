@@ -31,15 +31,15 @@ class User(AbstractUser):
         unique=True,
     )
 
-    def __str__(self) -> str:
-        return self.username
-
     REQUIRED_FIELDS = ['email', 'first_name', 'last_name']
 
     class Meta:
         ordering = ['username']
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
+
+    def __str__(self) -> str:
+        return self.username
 
 
 class Follow(models.Model):

@@ -1,19 +1,14 @@
 from colorfield.fields import ColorField
-from rest_framework import serializers
 
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
 from django.db import models
 
-MIN_COOK_TIME = 'Время приготовления блюда должно быть не менее одной минуты'
+from .validators import min_cooking_time
+
 MIN_AMOUNT = 'Количество ингредиента должно быть больше нуля'
 
 User = get_user_model()
-
-
-def min_cooking_time(value):
-    if value < 1:
-        raise serializers.ValidationError({'cooking_time': MIN_COOK_TIME})
 
 
 class Ingredient(models.Model):

@@ -88,26 +88,12 @@ class RecipeSerializer(serializers.ModelSerializer):
             user=request.user, recipe=obj
         ).exists()
 
-    def validate_tags(self, data):
-        if not data:
-            raise serializers.ValidationError({'tags': MIN_TAG})
-
-        if len(data) != len(set(data)):
-            raise serializers.ValidationError({'tags': DOUBLE_TAG})
-
-        for tag_id in data:
-            if not Tag.objects.filter(id=tag_id).exists():
-                raise serializers.ValidationError(
-                    f'{tag_id}: {NO_TAG}'
-                )
-
-        return data
-
-    def validate_ingredients(self, data):
-        if not data:
+    def validate(self, data):
+        ingredients = self.initial_data.get('ingredients')
+        if not ingredients:
             raise serializers.ValidationError({'ingredients': MIN_INGREDIENT})
 
-        ids = [ing['id'] for ing in data]
+        ids = [ing['id'] for ing in ingredients]
         if len(ids) != len(set(ids)):
             raise serializers.ValidationError(
                 {'ingredients': DOUBLE_INGREDIENT}
@@ -117,20 +103,27 @@ class RecipeSerializer(serializers.ModelSerializer):
             if not Ingredient.objects.filter(id=id).exists():
                 raise serializers.ValidationError(f'{id}: {NO_INGREDIENT}')
 
-        amounts = [ing['amount'] for ing in data]
+        amounts = [ing['amount'] for ing in ingredients]
         for amount in amounts:
             if int(amount) <= 0:
                 raise serializers.ValidationError({'amount': MIN_AMOUNT})
 
-        return data
+        data['ingredients'] = ingredients
 
-    def validate(self, data):
-        data['ingredients'] = self.validate_ingredients(
-            self.initial_data.get('ingredients')
-        )
-        data['tags'] = self.validate_tags(
-            self.initial_data.get('tags')
-        )
+        tags = self.initial_data.get('tags')
+
+        if not tags:
+            raise serializers.ValidationError({'tags': MIN_TAG})
+
+        if len(tags) != len(set(tags)):
+            raise serializers.ValidationError({'tags': DOUBLE_TAG})
+
+        for tag_id in tags:
+            if not Tag.objects.filter(id=tag_id).exists():
+                raise serializers.ValidationError(
+                    f'{tag_id}: {NO_TAG}'
+                )
+        data['tags'] = tags
 
         author = self.context.get('request').user
         if self.context.get('request').method == 'POST':

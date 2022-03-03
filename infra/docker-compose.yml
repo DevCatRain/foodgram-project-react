@@ -9,8 +9,7 @@ services:
       - ./.env
   
   backend:
-    build: ../backend/.
-    # image: catrain/foodgram:latest
+    image: catrain/foodgram:latest
     restart: always
     volumes:
       - static_value:/app/static/

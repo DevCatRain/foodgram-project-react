@@ -13,7 +13,7 @@ git clone https://github.com/DevCatRain/foodgram-project-react.git
 ```
 
 ```
-cd yamdb_final
+cd foodgram
 ```
 
 Cоздать и активировать виртуальное окружение:

@@ -1,5 +1,8 @@
 import os
 
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = os.getenv('SECRET_KEY', default='8=v6scmuy^ewe05mh-we5x16=^qax$jq^awq^th#^+43hvz(su')
@@ -126,3 +129,12 @@ DJOSER = {
     'HIDE_USERS': False,
     'LOGIN_FIELD': 'email',
 }
+
+sentry_sdk.init(
+    dsn="https://c4bf34f21c04458ab376b703b7724984@o1096073.ingest.sentry.io/6241142",
+    integrations=[DjangoIntegration()],
+
+    traces_sample_rate=1.0,
+
+    send_default_pii=True
+)

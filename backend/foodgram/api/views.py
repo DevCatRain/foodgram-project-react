@@ -14,7 +14,8 @@ from .models import Ingredient, Recipe, Tag
 from .paginator import CustomPaginator
 from .permissions import AuthorOrReadOnly
 from .serializers import (
-    FavoriteSerializer, IngredientSerializer, RecipeSerializer, TagSerializer,
+    FavoriteSerializer, IngredientSerializer, RecipeCreateSerializer,
+    RecipeSerializer, TagSerializer,
 )
 
 ALREADY_ADD_RECIPE = 'Этот рецепт уже добавлен'
@@ -32,14 +33,21 @@ class RecipeViewSet(viewsets.ModelViewSet):
     """
 
     queryset = Recipe.objects.all()
-    serializer_class = RecipeSerializer
     pagination_class = CustomPaginator
     permission_classes = (AuthorOrReadOnly,)
     filter_class = RecipeFilter
     filter_backends = (DjangoFilterBackend,)
 
     def perform_create(self, serializer):
-        return serializer.save(author=self.request.user)
+        serializer.save(author=self.request.user)
+
+    def perform_update(self, serializer):
+        serializer.save(author=self.request.user)
+
+    def get_serializer_class(self):
+        if self.action in ['list', 'retrieve']:
+            return RecipeSerializer
+        return RecipeCreateSerializer
 
     def _add_recipe_in(self, request, related_manager):
         recipe = self.get_object()

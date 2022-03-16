@@ -103,11 +103,10 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         read_only_fields = ('author',)
 
     def validate_ingredients(self, value):
-        ingredients = self.initial_data.get('ingredients')
-        if not ingredients:
+        if not value:
             raise serializers.ValidationError(MIN_INGREDIENT)
         ingredients_set = []
-        for ingredient in ingredients:
+        for ingredient in value:
             if int(ingredient['amount']) <= 0:
                 raise serializers.ValidationError(MIN_AMOUNT)
             if ingredient['id'] in ingredients_set:
@@ -117,12 +116,10 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         return value
 
     def validate_tags(self, value):
-        tags = self.initial_data.get('tags')
-
-        if not tags:
+        if not value:
             raise serializers.ValidationError({'tags': MIN_TAG})
 
-        if len(tags) != len(set(tags)):
+        if len(value) != len(set(value)):
             raise serializers.ValidationError({'tags': DOUBLE_TAG})
 
         return value

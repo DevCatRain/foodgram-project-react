@@ -1,3 +1,7 @@
+# Все импорты отсортированы с помощью isort .
+# Проходят автоматическую проверку flake8 при деплое.
+# Отдельно дополнительно проверила через сервис http://pep8online.com/.
+# Что с ними не так? 
 from django_filters import rest_framework
 
 from django.contrib.auth import get_user_model

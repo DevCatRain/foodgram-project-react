@@ -9,7 +9,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', default='8=v6scmuy^ewe05mh-we5x16=^qax$jq^a
 
 DEBUG = os.getenv('DEBUG', default=True)
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['127.0.0.1', '51.250.30.224']
 
 INSTALLED_APPS = [
     'api',

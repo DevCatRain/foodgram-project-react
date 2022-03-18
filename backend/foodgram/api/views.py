@@ -1,12 +1,11 @@
 from functools import reduce
 
+from django.db.models import Sum
+from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-
-from django.db.models import Sum
-from django.http import HttpResponse
 
 from .filters import IngredientFilter, RecipeFilter
 from .mixins import CreateListViewSet
@@ -14,8 +13,11 @@ from .models import Ingredient, Recipe, Tag
 from .paginator import CustomPaginator
 from .permissions import AuthorOrReadOnly
 from .serializers import (
-    FavoriteSerializer, IngredientSerializer, RecipeCreateSerializer,
-    RecipeSerializer, TagSerializer,
+    FavoriteSerializer,
+    IngredientSerializer,
+    RecipeCreateSerializer,
+    RecipeSerializer,
+    TagSerializer,
 )
 
 ALREADY_ADD_RECIPE = 'Этот рецепт уже добавлен'

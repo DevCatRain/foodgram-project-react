@@ -1,10 +1,9 @@
-from api.models import Recipe
+from django.contrib.auth import get_user_model
 from djoser.serializers import UserCreateSerializer
 from rest_framework import serializers, validators
 
-from django.contrib.auth import get_user_model
-
 from .models import Follow
+from api.models import Recipe
 
 EMAIL_USED = 'Этот email уже зарегистрирован'
 USERNAME_USED = 'Это имя пользователя уже используется'

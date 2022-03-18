@@ -1,12 +1,17 @@
-from api.models import (
-    AmountOfIngredient, Favorite, Ingredient, Recipe, ShoppingCart, Tag,
-)
-from drf_extra_fields.fields import Base64ImageField
-from rest_framework import serializers, validators
-from users.serializers import UserSerializer
-
 from django.contrib.auth import get_user_model
 from django.db.models import F
+from drf_extra_fields.fields import Base64ImageField
+from rest_framework import serializers, validators
+
+from .models import (
+    AmountOfIngredient,
+    Favorite,
+    Ingredient,
+    Recipe,
+    ShoppingCart,
+    Tag,
+)
+from users.serializers import UserSerializer
 
 MIN_INGREDIENT = 'Должен быть хотя бы один ингредиент в рецепте'
 DOUBLE_INGREDIENT = 'Ингредиенты не должны повторяться'

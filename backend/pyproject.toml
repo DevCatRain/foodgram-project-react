@@ -1,0 +1,10 @@
+[tool.isort]
+profile = "black"
+src_paths = "./"
+skip = "migrations,venv"
+skip_glob = "tests/*"
+default_section = "THIRDPARTY"
+known_first_party = ["api", "users"]
+known_local_folder = ["api", "users"]
+multi_line_output = 3
+line_length = 79

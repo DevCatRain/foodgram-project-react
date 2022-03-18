@@ -36,18 +36,28 @@ python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-Выполнить миграции:
+На удаленном сервере установить Docker и docker-compose:
 
+sudo apt install docker.io
+sudo apt install docker-compose
+Скопировать файлы docker-compose.yaml и nginx/default.conf из проекта на ваш сервер в home/<ваш_username>/docker-compose.yaml и home/<ваш_username>/nginx/default.conf
+
+При пуше в GitHub приложение сначала проходит тесты, при условии пуша в ветку master обновляется образ на Docker Hub и автоматически деплоится на сервер (при успешном workflow). Затем нужно подключиться к удаленному серверу и
+
+применить миграции:
 ```
-python manage.py migrate
+sudo docker-compose exec backend python manage.py migrate --noinput
 ```
 
-Запустить проект:
-
+создать суперпользователя:
 ```
-python manage.py runserver
+sudo docker-compose exec backend python manage.py createsuperuser
 ```
 
+загрузить ингредиенты в базу данных:
+```
+sudo docker-compose exec backend python manage.py load_data
+```
 
 Логин суперюзера: admin
 Пароль суперюзера: admin

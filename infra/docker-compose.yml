@@ -20,7 +20,7 @@ services:
       - ./.env
 
   frontend:
-    image: catrain/foodgram_frontend:latest
+    image: catrain/frontend:latest
     volumes:
       - ../frontend/:/app/result_build/
     depends_on:

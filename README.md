@@ -38,10 +38,18 @@ DB_PORT=5432
 
 * В терминале выполните команды из директории infra:
 
-docker-compose up -d --build - собираем и запускаем инфраструктуру
-docker-compose exec backend python manage.py migrate --noinput - выполняем миграции
-docker-compose exec backend python manage.py collectstatic --no-input - собираем статику
-docker-compose exec backend python manage.py loaddata dump.json - загружаем тестовые данные
+```
+docker-compose up -d --build
+``` - собираем и запускаем инфраструктуру
+```
+docker-compose exec backend python manage.py migrate --noinput
+``` - выполняем миграции
+```
+docker-compose exec backend python manage.py collectstatic --no-input
+``` - собираем статику
+```
+docker-compose exec backend python manage.py loaddata dump.json
+``` - загружаем тестовые данные
 
 ### Функциональность проекта:
 * Все сервисы и страницы доступны для пользователей в соответствии с их правами
@@ -51,6 +59,11 @@ docker-compose exec backend python manage.py loaddata dump.json - загружа
 * База наполнена исходными данные: добавлены ингредиенты, теги, тестовые пользователи и рецепты
 
 ### Тестовые пользователи
+```
+Логин: admin (суперюзер)
+Пароль: admin
+```
+
 ```
 Логин: test@test.ru
 Пароль: test123test

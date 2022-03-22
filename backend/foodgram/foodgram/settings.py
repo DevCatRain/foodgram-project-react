@@ -145,7 +145,7 @@ sentry_sdk.init(
     send_default_pii=True
 )
 
-""" LOGGING = {
+LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'handlers': {
@@ -162,4 +162,4 @@ sentry_sdk.init(
             'propagate': True,
         },
     },
-} """
+}

@@ -1,3 +1,7 @@
+![example workflow](https://github.com/DevCatRain/foodgram-project-react/actions/workflows/foodgram_workflow.yml/badge.svg)
+
+[example](http:178.154.197.104/api/docs)
+
 # praktikum_new_diplom
 Foodgram - Продуктовый помощник.
 Сервис позволяет публиковать рецепты, подписываться на публикации других пользователей,
@@ -57,9 +61,21 @@ sudo docker-compose exec backend python3 manage.py createsuperuser
 ```
 sudo docker-compose exec backend python3 manage.py load_data
 ```
+### Шаблон наполнения env-файла
+DB_ENGINE=  # postgresql
+DB_NAME=  # имя базы данных
+POSTGRES_USER=  # логин для подключения к БД
+POSTGRES_PASSWORD=  # пароль для подключения к БД
+DB_HOST=  # название сервиса (контейнера)
+DB_PORT=  # порт для подключение к БД
 
-Логин суперюзера: admin
-Пароль суперюзера: admin
-
+### Тестовые пользователи
 Логин: test@test.ru
 Пароль: test123test
+
+Логин: foodgram@foodgram.ru
+Пароль: food123food
+
+
+### Об авторе
+CatRain - [DevCatRain](https://github.com/DevCatRain)

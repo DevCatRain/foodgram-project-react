@@ -20,12 +20,12 @@ services:
       - ./.env
     pull_policy: always
 
-  # frontend:
-  #  image: catrain/foodgram_frontend:latest
-  #  volumes:
-  #    - ../frontend/:/app/result_build/
-  #  depends_on:
-  #    - backend
+  frontend:
+    image: catrain/foodgram_frontend:latest
+    volumes:
+      - ../frontend/:/app/result_build/
+    depends_on:
+      - backend
 
   nginx:
     image: nginx:1.19.3

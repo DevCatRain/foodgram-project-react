@@ -93,10 +93,6 @@ USE_L10N = True
 
 USE_TZ = True
 
-LOCALE_PATHS = [
-    os.path.join(BASE_DIR, 'core/locale'),
-]
-
 DOCS_DIR = os.path.join(BASE_DIR, 'api/docs/')
 
 STATIC_URL = '/static/'

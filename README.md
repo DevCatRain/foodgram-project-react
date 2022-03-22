@@ -45,21 +45,21 @@ sudo apt install docker-compose
 
 При пуше в GitHub приложение сначала проходит тесты, при условии пуша в ветку master обновляется образ на Docker Hub и автоматически деплоится на сервер (при успешном workflow). Затем нужно подключиться к удаленному серверу и применить миграции:
 ```
-sudo docker-compose exec backend python manage.py migrate --noinput
+sudo docker-compose exec backend python3 manage.py migrate --noinput
 ```
 
 создать суперпользователя:
 ```
-sudo docker-compose exec backend python manage.py createsuperuser
+sudo docker-compose exec backend python3 manage.py createsuperuser
 ```
 
 загрузить ингредиенты в базу данных:
 ```
-sudo docker-compose exec backend python manage.py load_data
+sudo docker-compose exec backend python3 manage.py load_data
 ```
 
 Логин суперюзера: admin
 Пароль суперюзера: admin
 
-Логин: test-1
-Пароль: foodgram
+Логин: test@test.ru
+Пароль: test123test

@@ -9,7 +9,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', default='8=v6scmuy^ewe05mh-we5x16=^qax$jq^a
 
 DEBUG = os.getenv('DEBUG', default=True)
 
-ALLOWED_HOSTS = ['178.154.197.104', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['127.0.0.1', '178.154.197.104', 'localhost']
 
 INSTALLED_APPS = [
     'api',
@@ -140,3 +140,22 @@ sentry_sdk.init(
 
     send_default_pii=True
 )
+
+""" LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': '/path/to/django/debug.log',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+} """

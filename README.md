@@ -1,81 +1,67 @@
 ![example workflow](https://github.com/DevCatRain/foodgram-project-react/actions/workflows/foodgram_workflow.yml/badge.svg)
 
-[example](http:178.154.197.104/api/docs)
+[foodgram](http:178.154.197.104/recipes)
 
-# praktikum_new_diplom
+# Дипломный проект
 Foodgram - Продуктовый помощник.
 Сервис позволяет публиковать рецепты, подписываться на публикации других пользователей,
 добавлять понравившиеся рецепты в список "Избранное", а перед походом в магазин - скачивать
 сводный список продуктов, необходимых для приготовления одного или нескольких выбранных блюд.
 
 ### Как запустить проект:
-
 Клонировать репозиторий и перейти в него в командной строке:
-
 ```
 git clone https://github.com/DevCatRain/foodgram-project-react.git
 ```
 
-```
-cd foodgram
-```
+### Инфраструктура
+* Проект работает с СУБД PostgreSQL.
 
-Cоздать и активировать виртуальное окружение:
+* Проект запущен на сервере в Яндекс.Облаке в трёх контейнерах: nginx, PostgreSQL и Django+Gunicorn. Заготовленный контейнер с фронтендом - используется для сборки файлов.
 
-```
-python3 -m venv venv
-```
+* Контейнер с проектом обновляется на Docker Hub.
 
-```
-. venv/bin/activate
-```
+* В nginx настроена раздача статики, запросы с фронтенда переадресуются в контейнер с Gunicorn. Джанго-админка работает напрямую через Gunicorn.
 
-```
-python -m pip install --upgrade pip
-```
+* Данные сохраняются в volumes.
 
-Установить зависимости из файла requirements.txt:
+* Создайте .env файл в директории проекта:
 
 ```
-pip install -r requirements.txt
+DB_ENGINE=django.db.backends.postgresql
+DB_NAME=postgres
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+DB_HOST=db
+DB_PORT=5432
 ```
 
-На удаленном сервере установить Docker и docker-compose:
-```
-sudo apt install docker.io
-sudo apt install docker-compose
-```
-Скопировать файлы docker-compose.yaml и nginx/default.conf из проекта на ваш сервер в home/<ваш_username>/docker-compose.yaml и home/<ваш_username>/nginx/default.conf
+* В терминале выполните команды из директории infra:
 
-При пуше в GitHub приложение сначала проходит тесты, при условии пуша в ветку master обновляется образ на Docker Hub и автоматически деплоится на сервер (при успешном workflow). Затем нужно подключиться к удаленному серверу и применить миграции:
-```
-sudo docker-compose exec backend python3 manage.py migrate --noinput
-```
+docker-compose up -d --build - собираем и запускаем инфраструктуру
+docker-compose exec backend python manage.py migrate --noinput - выполняем миграции
+docker-compose exec backend python manage.py collectstatic --no-input - собираем статику
+docker-compose exec backend python manage.py loaddata dump.json - загружаем тестовые данные
 
-создать суперпользователя:
-```
-sudo docker-compose exec backend python3 manage.py createsuperuser
-```
-
-загрузить ингредиенты в базу данных:
-```
-sudo docker-compose exec backend python3 manage.py load_data
-```
-### Шаблон наполнения env-файла
-DB_ENGINE=  # postgresql
-DB_NAME=  # имя базы данных
-POSTGRES_USER=  # логин для подключения к БД
-POSTGRES_PASSWORD=  # пароль для подключения к БД
-DB_HOST=  # название сервиса (контейнера)
-DB_PORT=  # порт для подключение к БД
+### Функциональность проекта:
+* Все сервисы и страницы доступны для пользователей в соответствии с их правами
+* Рецепты на всех страницах сортируются по дате публикации от новых к старым
+* Работает фильтрация по тегам
+* Пагинация включена на всех страницах
+* База наполнена исходными данные: добавлены ингредиенты, теги, тестовые пользователи и рецепты
 
 ### Тестовые пользователи
+```
 Логин: test@test.ru
 Пароль: test123test
-
+```
+```
 Логин: foodgram@foodgram.ru
 Пароль: food123food
+```
 
+### Оформление кода
+Код соответствует PEP8
 
 ### Об авторе
 CatRain - [DevCatRain](https://github.com/DevCatRain)

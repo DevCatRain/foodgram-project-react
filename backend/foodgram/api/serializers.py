@@ -20,7 +20,7 @@ MIN_AMOUNT = 'Количество ингредиента должно быть 
 DOUBLE_RECIPE = 'У вас уже есть'
 MIN_TAG = 'Установите хотя бы один тег'
 DOUBLE_TAG = 'Теги не должны повторяться'
-COOK_TIME = 'Укажите время приготовления блюда'
+COOK_TIME = 'Время приготовления блюда должно быть больше нуля'
 ALREADY_ADD_RECIPE = 'Вы уже добавили этот рецепт'
 
 User = get_user_model()
@@ -126,6 +126,12 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
 
         if len(value) != len(set(value)):
             raise serializers.ValidationError({'tags': DOUBLE_TAG})
+
+        return value
+
+    def validate_cooking_time(self, value):
+        if not value or value <= 0:
+            raise serializers.ValidationError({'cooking_time': COOK_TIME})
 
         return value
 

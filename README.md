@@ -38,18 +38,22 @@ DB_PORT=5432
 
 * В терминале выполните команды из директории infra:
 
+- собираем и запускаем инфраструктуру
 ```
 docker-compose up -d --build
-``` - собираем и запускаем инфраструктуру
+``` 
+- выполняем миграции
 ```
 docker-compose exec backend python manage.py migrate --noinput
-``` - выполняем миграции
+``` 
+- собираем статику
 ```
 docker-compose exec backend python manage.py collectstatic --no-input
-``` - собираем статику
+``` 
+- загружаем тестовые данные
 ```
 docker-compose exec backend python manage.py loaddata dump.json
-``` - загружаем тестовые данные
+```
 
 ### Функциональность проекта:
 * Все сервисы и страницы доступны для пользователей в соответствии с их правами
